@@ -18,7 +18,7 @@ var spotify_redirect_uri = 'http://localhost:3000/auth/callback'
 var generateRandomString = function (length) {
   var text = '';
   var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
+  
   for (var i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
@@ -29,7 +29,11 @@ var app = express();
 
 app.get('/auth/login', (req, res) => {
 
-  var scope = "streaming user-read-email user-read-private"
+  var scope = "streaming user-read-email user-read-private user-modify-playback-state" +
+    "user-read-recently-played user-read-playback-position playlist-read-collaborative" + 
+    "user-read-playback-state streaming user-top-read user-read-currently-playing" +
+    "user-library-read playlist-read-private playlist-modify-public"
+    
   var state = generateRandomString(16);
 
   var auth_query_parameters = new URLSearchParams({
@@ -69,21 +73,19 @@ app.get('/auth/callback', (req, res) => {
       json: true
     };
     
-    console.log("before: " + access_token)
   request.post(authOptions, function(error, response, body) {
     if (!error && response.statusCode === 200) {
       access_token = body.access_token;
-      console.log("after: " + access_token)
       res.redirect('/')
     }
   });
 
-  app.get('/auth/token', (req, res) => {
-    console.log("retrieval: " + access_token)
-    res.json({ access_token: access_token})
-  })
 }})
 
+
+app.get('/auth/token', (req, res) => {
+  res.json({ access_token: access_token})
+})
 
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`)

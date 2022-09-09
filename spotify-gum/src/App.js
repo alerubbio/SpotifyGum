@@ -7,6 +7,7 @@ function App() {
 
   const [token, setToken] = useState('');
 
+  console.log("token val before:" + token)
   useEffect(() => {
 
     async function getToken() {
@@ -16,7 +17,7 @@ function App() {
     }
 
     getToken();
-
+    console.log("token val after:" + token)
   }, []);
 
   return (
