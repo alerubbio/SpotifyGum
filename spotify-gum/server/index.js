@@ -18,7 +18,7 @@ var spotify_redirect_uri = 'http://localhost:3000/auth/callback'
 var generateRandomString = function (length) {
   var text = '';
   var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  
+
   for (var i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
@@ -29,11 +29,11 @@ var app = express();
 
 app.get('/auth/login', (req, res) => {
 
-  var scope = "streaming user-read-email user-read-private user-modify-playback-state" +
-    "user-read-recently-played user-read-playback-position playlist-read-collaborative" + 
-    "user-read-playback-state streaming user-top-read user-read-currently-playing" +
-    "user-library-read playlist-read-private playlist-modify-public"
-    
+  var scope = "streaming user-read-email user-read-private user-modify-playback-state " +
+    "user-read-recently-played user-read-playback-position playlist-read-collaborative " +
+    "user-read-playback-state streaming user-top-read user-read-currently-playing " +
+    "user-library-read playlist-read-private playlist-modify-public "
+
   var state = generateRandomString(16);
 
   var auth_query_parameters = new URLSearchParams({
@@ -61,9 +61,9 @@ app.get('/auth/callback', (req, res) => {
     var authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       headers: {
-        'Authorization': 'Basic ' 
-        + encodedPayload,
-        'Content-Type' : 'application/x-www-form-urlencoded'
+        'Authorization': 'Basic '
+          + encodedPayload,
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
       form: {
         code: code,
@@ -72,19 +72,41 @@ app.get('/auth/callback', (req, res) => {
       },
       json: true
     };
-    
-  request.post(authOptions, function(error, response, body) {
-    if (!error && response.statusCode === 200) {
-      access_token = body.access_token;
-      res.redirect('/')
-    }
-  });
 
-}})
+    request.post(authOptions, function (error, response, body) {
+      if (!error && response.statusCode === 200) {
+        access_token = body.access_token;
+        res.redirect('/')
+      }
+    });
+
+  }
+})
 
 
 app.get('/auth/token', (req, res) => {
-  res.json({ access_token: access_token})
+  res.json({ access_token: access_token })
+})
+
+app.get('/me/top/tracks', (req, res) => {
+
+  const response = fetch('https://api.spotify.com/v1/me/top/tracks', {
+    method: "GET",
+    headers: ({
+      'Authorization': 'Basic ' + encodedPayload,
+      'Content-type': 'application/json',
+    }),
+    body: JSON.stringify({
+      limit: 30,
+      offset: 0,
+      time_range: 'medium_term',
+    })
+  }).then((res) => {
+    res.json()
+    console.log(res)
+  });
+
+  res.json(response)
 })
 
 app.listen(port, () => {

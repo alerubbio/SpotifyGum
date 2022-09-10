@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import WebPlayback from './WebPlayback.jsx'
 import Login from './Login'
 import './App.css';
+import TopTracks from './TopTracks.jsx';
 
 function App() {
 
   const [token, setToken] = useState('');
 
-  console.log("token val before:" + token)
   useEffect(() => {
 
     async function getToken() {
@@ -17,12 +17,12 @@ function App() {
     }
 
     getToken();
-    console.log("token val after:" + token)
   }, []);
 
   return (
     <>
         { (token === '') ? <Login/> : <WebPlayback token={token} /> }
+        <TopTracks/>
     </>
   );
 }
