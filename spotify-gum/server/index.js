@@ -61,8 +61,7 @@ app.get('/auth/callback', (req, res) => {
     var authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       headers: {
-        'Authorization': 'Basic '
-          + encodedPayload,
+        'Authorization': 'Basic ' + encodedPayload,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       form: {
@@ -82,7 +81,6 @@ app.get('/auth/callback', (req, res) => {
 
   }
 })
-
 
 app.get('/auth/token', (req, res) => {
   res.json({ access_token: access_token })
