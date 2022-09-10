@@ -61,8 +61,7 @@ app.get('/auth/callback', (req, res) => {
     var authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       headers: {
-        'Authorization': 'Basic '
-          + encodedPayload,
+        'Authorization': 'Basic ' + encodedPayload,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       form: {
@@ -87,26 +86,26 @@ app.get('/auth/token', (req, res) => {
   res.json({ access_token: access_token })
 })
 
-// app.get('/me/top/tracks', (req, res) => {
+app.get('/me/top/tracks', (req, res) => {
 
-//   const response = fetch('https://api.spotify.com/v1/me/player', {
-//     method: "GET",
-//     headers: ({
-//       'Content-type': 'application/json',
-//       'Authorization': `Bearer ${access_token}`
-//     }),
-//     body: JSON.stringify({
-//       limit: 30,
-//       offset: 0,
-//       time_range: 'medium_term',
-//     })
-//   }).then((res) => {
-//     res.json()
-//     console.log(res)
-//   });
+  const response = fetch('https://api.spotify.com/v1/me/top/tracks', {
+    method: "GET",
+    headers: ({
+      'Authorization': 'Basic ' + encodedPayload,
+      'Content-type': 'application/json',
+    }),
+    body: JSON.stringify({
+      limit: 30,
+      offset: 0,
+      time_range: 'medium_term',
+    })
+  }).then((res) => {
+    res.json()
+    console.log(res)
+  });
 
-//   res.json(response)
-// })
+  res.json(response)
+})
 
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`)
