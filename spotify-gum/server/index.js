@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express')
 const request = require('request');
 const queryString = require('query-string');
+const axios = require('axios');
 
 const port = 5000
 
@@ -13,7 +14,7 @@ var spotify_client_secret = process.env.SPOTIFY_CLIENT_SECRET
 const payload = spotify_client_id + ":" + spotify_client_secret;
 const encodedPayload = Buffer.from(payload).toString("base64");
 
-var spotify_redirect_uri = 'http://localhost:3000/auth/callback'
+var spotify_redirect_uri = 'http://localhost:3000/api/callback'
 
 var generateRandomString = function (length) {
   var text = '';
@@ -27,7 +28,7 @@ var generateRandomString = function (length) {
 
 var app = express();
 
-app.get('/auth/login', (req, res) => {
+app.get('/api/login', (req, res) => {
 
   var scope = "streaming user-read-email user-read-private user-modify-playback-state " +
     "user-read-recently-played user-read-playback-position playlist-read-collaborative " +
@@ -47,64 +48,58 @@ app.get('/auth/login', (req, res) => {
   res.redirect('https://accounts.spotify.com/authorize/?' + auth_query_parameters.toString());
 })
 
-app.get('/auth/callback', (req, res) => {
+app.get('/api/callback', (req, res) => {
 
   var code = req.query.code || null;
   var state = req.query.state || null;
 
-  if (state === null) {
-    res.redirect('/#' +
-      queryString.stringify({
-        error: 'state_mismatch'
-      }));
-  } else {
-    var authOptions = {
-      url: 'https://accounts.spotify.com/api/token',
-      headers: {
-        'Authorization': 'Basic ' + encodedPayload,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      form: {
+    axios(
+    {
+      method: 'POST',
+      url:'https://accounts.spotify.com/api/token',
+      data: queryString.stringify({
+        grant_type: 'authorization_code',
         code: code,
-        redirect_uri: spotify_redirect_uri,
-        grant_type: 'authorization_code'
-      },
-      json: true
-    };
-
-    request.post(authOptions, function (error, response, body) {
-      if (!error && response.statusCode === 200) {
-        access_token = body.access_token;
+        redirect_uri: spotify_redirect_uri
+      }),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + encodedPayload
+      }},
+    )
+    .then(response => {
+      if(response.status === 200){
+        access_token = response.data.access_token
         res.redirect('/')
       }
-    });
-
+    })
+    .catch(error => console.log(error.response))
   }
-})
+)
 
-app.get('/auth/token', (req, res) => {
+
+app.get('/api/token', (req, res) => {
   res.json({ access_token: access_token })
 })
 
-app.get('/me/top/tracks', (req, res) => {
-
-  const response = fetch('https://api.spotify.com/v1/me/top/tracks', {
-    method: "GET",
-    headers: ({
-      'Authorization': 'Basic ' + encodedPayload,
-      'Content-type': 'application/json',
-    }),
-    body: JSON.stringify({
+app.get('/api/top/tracks', (req, res) => {
+  
+  axios({
+    method: 'GET',
+    url: 'https://api.spotify.com/v1/me/top/tracks',
+    data: queryString.stringify({
       limit: 30,
       offset: 0,
-      time_range: 'medium_term',
-    })
-  }).then((res) => {
-    res.json()
-    console.log(res)
-  });
-
-  res.json(response)
+      time_range: 'medium_term'
+    }),
+    headers: {
+      'Authorization': 'Basic ' + encodedPayload,
+      'Content-type': 'application/json',
+    }
+  }).then(response => {
+    console.log(response.data)
+    res.json(response.data)
+  }).catch(error => console.log(error.response))
 })
 
 app.listen(port, () => {

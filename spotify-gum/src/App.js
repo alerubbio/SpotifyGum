@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import WebPlayback from './WebPlayback.jsx'
 import Login from './Login'
-import '../CSS/App.css';
+import './App.css';
 import TopTracks from './TopTracks.jsx';
+import GumContainer from './GumContainer.jsx';
 
 function App() {
 
@@ -11,7 +12,7 @@ function App() {
   useEffect(() => {
 
     async function getToken() {
-      const response = await fetch('/auth/token');
+      const response = await fetch('/api/token');
       const json = await response.json();
       setToken(json.access_token);
     }
@@ -21,10 +22,7 @@ function App() {
 
   return (
     <>
-      <div>
-        {(token === '') ? <Login /> : <WebPlayback token={token} />}
-        <TopTracks />
-      </div>
+        { (token === '') ? <Login/> : <GumContainer token={token} /> }
     </>
   );
 }
